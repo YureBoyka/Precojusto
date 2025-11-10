@@ -823,6 +823,46 @@ document.addEventListener('DOMContentLoaded', () => {
         // store listener so we can remove later
         comparePage._onPop = onPop;
 
+        // Bind delegated actions for favorites/cart inside the mobile compare page
+        if (!comparePage._onFavCart) {
+            comparePage._onFavCart = (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const id = btn.dataset && btn.dataset.id;
+                if (!id) return;
+                // Favoritar
+                if (btn.classList.contains('fav-btn')) {
+                    let favorites = getFromSessionStorage('favorites');
+                    const isFav = favorites.some(f => String(f.id) === String(id));
+                    if (isFav) {
+                        favorites = favorites.filter(f => String(f.id) !== String(id));
+                    } else {
+                        const product = getFromLocalStorage('products').find(p => String(p.id) === String(id));
+                        if (product) favorites.push(product);
+                    }
+                    saveToSessionStorage('favorites', favorites);
+                    renderFavorites();
+                    renderProducts();
+                    // feedback rápido
+                    try { showToast(isFav ? 'Removido dos favoritos' : 'Adicionado aos favoritos', { type: 'info' }); } catch(_) {}
+                }
+                // Carrinho
+                if (btn.classList.contains('cart-btn')) {
+                    const cart = getFromSessionStorage('cart');
+                    const product = getFromLocalStorage('products').find(p => String(p.id) === String(id));
+                    if (product) {
+                        const existing = cart.find(i => String(i.id) === String(id));
+                        if (existing) existing.quantity = (existing.quantity || 1) + 1;
+                        else { const copy = Object.assign({}, product); copy.quantity = 1; cart.push(copy); }
+                        saveToSessionStorage('cart', cart);
+                        renderCartItems();
+                        try { showToast(`${product.name} adicionado ao carrinho`, { type: 'success' }); } catch(_) {}
+                    }
+                }
+            };
+            comparePage.addEventListener('click', comparePage._onFavCart);
+        }
+
         // ensure columnsWrap fills the container
         try { columnsWrap.style.width = '100%'; columnsWrap.style.boxSizing = 'border-box'; } catch (e) { /* ignore if not settable */ }
 
