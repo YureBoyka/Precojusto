@@ -1021,10 +1021,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btn.classList.contains('fav-active')) btn.classList.remove('fav-active'); else btn.classList.add('fav-active');
             renderFavorites();
             renderProducts();
-            // show alert only when adding
+            // show toast only when adding (fallback to alert)
             if (!isFav) {
                 const added = getFromLocalStorage('products').find(p => String(p.id) === String(id));
-                if (added) alert(`${added.name} adicionado aos favoritos!`);
+                if (added) {
+                    try { showToast(`${added.name} adicionado aos favoritos!`, { type: 'success' }); }
+                    catch (_) { alert(`${added.name} adicionado aos favoritos!`); }
+                }
             }
         } else if (btn.classList.contains('cart-btn')) {
             const cart = getFromSessionStorage('cart');
@@ -1037,7 +1040,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderCartItems();
                 // toggle visual state on the button to indicate added
                 if (btn.classList.contains('adicionado')) btn.classList.remove('adicionado'); else btn.classList.add('adicionado');
-                alert(`${product.name} adicionado ao carrinho!`);
+                try { showToast(`${product.name} adicionado ao carrinho!`, { type: 'success' }); }
+                catch (_) { alert(`${product.name} adicionado ao carrinho!`); }
             }
         }
     });
