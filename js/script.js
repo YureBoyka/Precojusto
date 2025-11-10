@@ -523,6 +523,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const branded = [];
     const privateLabel = [];
     const favoritesList = getFromSessionStorage('favorites');
+    const cartList = getFromSessionStorage('cart');
+    const isFav = (id) => favoritesList.some(f => String(f.id) === String(id));
+    const inCart = (id) => cartList.some(c => String(c.id) === String(id));
         matches.forEach(p => { if (isPrivateLabel(p.brand)) privateLabel.push(p); else branded.push(p); });
 
         // find cheapest per group and globally
@@ -560,8 +563,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="highlight-badge">Mais Barato</span>
                 </div>
                 <div class="highlight-actions">
-                    <button class="fav-btn" data-id="${cheapestGlobal.id}" title="Favoritar"><i class="fas fa-heart"></i></button>
-                    <button class="cart-btn" data-id="${cheapestGlobal.id}" title="Adicionar ao carrinho"><i class="fas fa-shopping-cart"></i></button>
+                    <button class="fav-btn ${isFav(cheapestGlobal.id) ? 'fav-active' : ''}" aria-pressed="${isFav(cheapestGlobal.id)}" data-id="${cheapestGlobal.id}" title="Favoritar"><i class="fas fa-heart"></i></button>
+                    <button class="cart-btn ${inCart(cheapestGlobal.id) ? 'adicionado in-cart' : ''}" aria-pressed="${inCart(cheapestGlobal.id)}" data-id="${cheapestGlobal.id}" title="Adicionar ao carrinho"><i class="fas fa-shopping-cart"></i></button>
                 </div>
             </div>
         `;
@@ -595,8 +598,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="cli-price-col">${formatPrice(p.price)}</div>
                 <div class="cli-diff-col">${diffPercent(p.price)}</div>
                 <div class="cli-actions-col">
-                    <button class="fav-btn" data-id="${p.id}" title="Favoritar"><i class="fas fa-heart"></i></button>
-                    <button class="cart-btn" data-id="${p.id}" title="Adicionar ao carrinho"><i class="fas fa-shopping-cart"></i></button>
+                    <button class="fav-btn ${isFav(p.id) ? 'fav-active' : ''}" aria-pressed="${isFav(p.id)}" data-id="${p.id}" title="Favoritar"><i class="fas fa-heart"></i></button>
+                    <button class="cart-btn ${inCart(p.id) ? 'adicionado in-cart' : ''}" aria-pressed="${inCart(p.id)}" data-id="${p.id}" title="Adicionar ao carrinho"><i class="fas fa-shopping-cart"></i></button>
                 </div>
             `;
             ul.appendChild(item);
@@ -635,8 +638,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="highlight-badge">Mais Barato</span>
                     </div>
                     <div class="highlight-actions">
-                        <button class="fav-btn" data-id="${cheapestGlobal.id}" title="Favoritar"><i class="fas fa-heart"></i></button>
-                        <button class="cart-btn" data-id="${cheapestGlobal.id}" title="Adicionar ao carrinho"><i class="fas fa-shopping-cart"></i></button>
+                        <button class="fav-btn ${isFav(cheapestGlobal.id) ? 'fav-active' : ''}" aria-pressed="${isFav(cheapestGlobal.id)}" data-id="${cheapestGlobal.id}" title="Favoritar"><i class="fas fa-heart"></i></button>
+                        <button class="cart-btn ${inCart(cheapestGlobal.id) ? 'adicionado in-cart' : ''}" aria-pressed="${inCart(cheapestGlobal.id)}" data-id="${cheapestGlobal.id}" title="Adicionar ao carrinho"><i class="fas fa-shopping-cart"></i></button>
                     </div>
                 </div>
             `;
@@ -667,8 +670,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="cli-price-col">${formatPrice(p.price)}</div>
                     <div class="cli-diff-col">${diffPct(p.price)}</div>
                     <div class="cli-actions-col">
-                        <button class="fav-btn" data-id="${p.id}" title="Favoritar"><i class="fas fa-heart"></i></button>
-                        <button class="cart-btn" data-id="${p.id}" title="Adicionar ao carrinho"><i class="fas fa-shopping-cart"></i></button>
+                        <button class="fav-btn ${isFav(p.id) ? 'fav-active' : ''}" aria-pressed="${isFav(p.id)}" data-id="${p.id}" title="Favoritar"><i class="fas fa-heart"></i></button>
+                        <button class="cart-btn ${inCart(p.id) ? 'adicionado in-cart' : ''}" aria-pressed="${inCart(p.id)}" data-id="${p.id}" title="Adicionar ao carrinho"><i class="fas fa-shopping-cart"></i></button>
                     </div>
                 `;
                 mobileList.appendChild(node);
@@ -795,12 +798,13 @@ document.addEventListener('DOMContentLoaded', () => {
             comparePage.className = 'compare-page';
             document.body.appendChild(comparePage);
         }
-        // header + content
+        // header + content + notice bar
         comparePage.innerHTML = `
             <div class="compare-page-header">
                 <button id="compare-page-back" class="compare-page-back">← Voltar</button>
                 <div class="compare-page-title">Comparar: ${productName}</div>
             </div>
+            <div id="compare-action-notice" class="compare-action-notice" style="display:none"></div>
         `;
         const content = document.createElement('div');
         content.className = 'compare-page-content';
@@ -843,8 +847,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     saveToSessionStorage('favorites', favorites);
                     renderFavorites();
                     renderProducts();
-                    // feedback rápido
-                    try { showToast(isFav ? 'Removido dos favoritos' : 'Adicionado aos favoritos', { type: 'info' }); } catch(_) {}
+                    // toggle visual state
+                    const nowFav = !isFav;
+                    btn.classList.toggle('fav-active', nowFav);
+                    btn.setAttribute('aria-pressed', String(nowFav));
+                    const notice = document.getElementById('compare-action-notice');
+                    if (notice) {
+                        notice.textContent = nowFav ? 'Adicionado aos favoritos' : 'Removido dos favoritos';
+                        notice.className = 'compare-action-notice ' + (nowFav ? 'success' : 'info');
+                        notice.style.display = 'block';
+                        // auto-hide after 2.5s
+                        clearTimeout(notice._t);
+                        notice._t = setTimeout(()=> notice.style.display='none', 2500);
+                    }
+                    try { showToast(nowFav ? 'Adicionado aos favoritos' : 'Removido dos favoritos', { type: 'info' }); } catch(_) {}
                 }
                 // Carrinho
                 if (btn.classList.contains('cart-btn')) {
@@ -856,6 +872,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         else { const copy = Object.assign({}, product); copy.quantity = 1; cart.push(copy); }
                         saveToSessionStorage('cart', cart);
                         renderCartItems();
+                        btn.classList.add('adicionado','in-cart');
+                        btn.setAttribute('aria-pressed','true');
+                        const notice = document.getElementById('compare-action-notice');
+                        if (notice) {
+                            notice.textContent = `${product.name} adicionado ao carrinho`;
+                            notice.className = 'compare-action-notice success';
+                            notice.style.display = 'block';
+                            clearTimeout(notice._t);
+                            notice._t = setTimeout(()=> notice.style.display='none', 2500);
+                        }
                         try { showToast(`${product.name} adicionado ao carrinho`, { type: 'success' }); } catch(_) {}
                     }
                 }
@@ -1017,8 +1043,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (product) favorites.push(product);
             }
             saveToSessionStorage('favorites', favorites);
-            // toggle active class immediately for responsive feedback
-            if (btn.classList.contains('fav-active')) btn.classList.remove('fav-active'); else btn.classList.add('fav-active');
+            // toggle active class and aria
+            const nowFav = !isFav;
+            btn.classList.toggle('fav-active', nowFav);
+            btn.setAttribute('aria-pressed', String(nowFav));
             renderFavorites();
             renderProducts();
             // show toast only when adding (fallback to alert)
@@ -1039,7 +1067,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveToSessionStorage('cart', cart);
                 renderCartItems();
                 // toggle visual state on the button to indicate added
-                if (btn.classList.contains('adicionado')) btn.classList.remove('adicionado'); else btn.classList.add('adicionado');
+                btn.classList.add('adicionado','in-cart');
+                btn.setAttribute('aria-pressed','true');
                 try { showToast(`${product.name} adicionado ao carrinho!`, { type: 'success' }); }
                 catch (_) { alert(`${product.name} adicionado ao carrinho!`); }
             }

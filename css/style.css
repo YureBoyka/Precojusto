@@ -1789,6 +1789,21 @@ body.modal-open {
 .compare-page-header { display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid rgba(0,0,0,0.06); }
 .compare-page-back { background: transparent; border: none; font-weight:700; font-size:1rem; cursor:pointer; }
 .compare-page-title { font-weight:800; font-size:1.02rem; color:#0f172a; }
+.compare-action-notice { padding:10px 14px; font-weight:600; font-size:0.85rem; display:none; }
+.compare-action-notice.success { background:linear-gradient(180deg,#ecfdf5,#dcfce7); color:#065f46; border-top:1px solid #bbf7d0; border-bottom:1px solid #bbf7d0; }
+.compare-action-notice.info { background:linear-gradient(180deg,#eff6ff,#dbeafe); color:#1e3a8a; border-top:1px solid #bfdbfe; border-bottom:1px solid #bfdbfe; }
+.compare-action-notice.error { background:linear-gradient(180deg,#fef2f2,#fee2e2); color:#7f1d1d; border-top:1px solid #fecaca; border-bottom:1px solid #fecaca; }
+
+/* Selected states for fav/cart inside compare views */
+.compare-highlight-card .fav-btn.fav-active i,
+.compare-linear-item .fav-btn.fav-active i,
+.compare-card .fav-btn.fav-active i { color:#dc2626 !important; }
+.compare-highlight-card .cart-btn.in-cart,
+.compare-linear-item .cart-btn.in-cart,
+.compare-card .cart-btn.in-cart { background:#059669 !important; color:#fff !important; border:1px solid #047857 !important; }
+.compare-highlight-card .cart-btn.in-cart i,
+.compare-linear-item .cart-btn.in-cart i,
+.compare-card .cart-btn.in-cart i { color:#fff !important; }
 .compare-page-content { overflow:auto; padding:12px; height: calc(100vh - 56px); }
 
 /* Visual separation and group headers for mobile compare list */
