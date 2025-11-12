@@ -1,7 +1,7 @@
 // Root-scoped Service Worker (controls entire site)
 // Keep this file at the site root to ensure scope='/' in all browsers, including iOS Safari
 // Version bump to force updates on clients
-const CACHE_NAME = 'precomercado-v5';
+const CACHE_NAME = 'precomercado-v6';
 const APP_SHELL = [
   '/',
   '/index.html',
