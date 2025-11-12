@@ -340,6 +340,36 @@
     </div>
 
     <script type="module" src="js/admin.js"></script>
+    <script>
+        // Root-scoped Service Worker registration for direct admin access
+        (function() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('/service-worker.js?v=20251112')
+                        .then(reg => {
+                            console.log('SW registrado (admin):', reg.scope);
+                            if (reg.waiting) { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
+                            reg.addEventListener('updatefound', () => {
+                                const nw = reg.installing;
+                                if (!nw) return;
+                                nw.addEventListener('statechange', () => {
+                                    if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                                        nw.postMessage({ type: 'SKIP_WAITING' });
+                                    }
+                                });
+                            });
+                            let refreshing = false;
+                            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                                if (refreshing) return;
+                                refreshing = true;
+                                window.location.reload();
+                            });
+                        })
+                        .catch(err => console.error('SW registro falhou (admin):', err));
+                }
+            } catch (e) { console.warn('SW indisponível:', e); }
+        })();
+    </script>
     
     <!-- Add Scanner Fix Script -->
     <script>

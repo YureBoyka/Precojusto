@@ -694,6 +694,36 @@
     <script src="js/script.js"></script>
     <script src="js/barcode-scanner.js"></script>
     <script type="module" src="js/firebase-loader.js"></script>
+    <script>
+        // Root-scoped Service Worker registration (iOS-friendly)
+        (function() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('/service-worker.js?v=20251112')
+                        .then(reg => {
+                            console.log('SW registrado (index):', reg.scope);
+                            if (reg.waiting) { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
+                            reg.addEventListener('updatefound', () => {
+                                const nw = reg.installing;
+                                if (!nw) return;
+                                nw.addEventListener('statechange', () => {
+                                    if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                                        nw.postMessage({ type: 'SKIP_WAITING' });
+                                    }
+                                });
+                            });
+                            let refreshing = false;
+                            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                                if (refreshing) return;
+                                refreshing = true;
+                                window.location.reload();
+                            });
+                        })
+                        .catch(err => console.error('SW registro falhou (index):', err));
+                }
+            } catch (e) { console.warn('SW indisponível:', e); }
+        })();
+    </script>
         <script>
             // Custom install prompt handling
             let deferredPrompt = null;
