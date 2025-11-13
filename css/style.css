@@ -2668,7 +2668,8 @@ button[aria-label="Abrir leitor de código de barras"],
 .barcode-scanner-modal {
     display: none;
     position: fixed;
-    z-index: 10000;
+    /* Elevado acima do header (110000) e outros overlays. Mantemos abaixo dos toasts (300000) */
+    z-index: 250000; /* Antes: 10000 causava o header ficar por cima */
     left: 0;
     top: 0;
     width: 100%;

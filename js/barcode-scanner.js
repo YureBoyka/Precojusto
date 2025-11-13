@@ -451,6 +451,26 @@
         scannerModal.classList.add('show');
         scannerModal.style.display = 'flex';
         document.body.classList.add('modal-open');
+
+        // Remover foco de qualquer campo de entrada para evitar teclado aberto / digitação indevida
+        try {
+            const blurIds = ['product-search-bar', 'barcode-search-bar'];
+            blurIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && typeof el.blur === 'function') el.blur();
+            });
+            if (document.activeElement && document.activeElement !== document.body && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+            }
+        } catch (e) {
+            console.warn('Falha ao remover foco dos inputs:', e);
+        }
+
+        // Garantir que o modal recebe foco para acessibilidade e evitar re-foco em inputs
+        if (!scannerModal.hasAttribute('tabindex')) {
+            scannerModal.setAttribute('tabindex', '-1');
+        }
+        try { scannerModal.focus(); } catch (_) {}
         
         // Resetar flash
         flashEnabled = false;
