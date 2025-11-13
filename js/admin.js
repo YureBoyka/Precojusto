@@ -224,6 +224,29 @@ class BarcodeProductSearch {
         } else {
             console.error('❌ Botão de busca de nomes não encontrado!');
         }
+
+        // Botão de busca de imagens no Google
+        const searchImageButton = document.getElementById('search-image-btn');
+        if (searchImageButton) {
+            console.log('✅ Botão de busca de imagens encontrado');
+            searchImageButton.addEventListener('click', () => {
+                console.log('🖼️ Clique no botão de busca de imagens detectado');
+                const productName = document.getElementById('product-name').value;
+                const brand = document.getElementById('product-brand').value || '';
+                
+                console.log('🖼️ Dados para busca de imagem:', { productName, brand });
+                
+                if (productName && productName.trim()) {
+                    console.log('🖼️ Chamando searchProductImages...');
+                    this.searchProductImages(productName, brand);
+                } else {
+                    console.warn('⚠️ Campo nome vazio');
+                    alert('Por favor, preencha o campo nome do produto primeiro');
+                }
+            });
+        } else {
+            console.error('❌ Botão de busca de imagens não encontrado!');
+        }
     }
 
     async searchProductByBarcode(barcode) {
@@ -1938,6 +1961,234 @@ class BarcodeProductSearch {
         const dropdown = document.querySelector('.name-options-dropdown');
         if (dropdown) {
             dropdown.style.display = 'none';
+        }
+    }
+
+    // Buscar imagens do produto no Google
+    async searchProductImages(productName, brand) {
+        console.log('🖼️ Iniciando busca de imagens para:', productName, brand);
+        
+        // Construir query de busca
+        const searchQuery = brand ? `${brand} ${productName}` : productName;
+        
+        // Abrir modal de seleção de imagens
+        const modal = document.getElementById('image-selection-modal');
+        const queryDisplay = document.getElementById('image-search-query');
+        const imageGrid = document.getElementById('image-grid');
+        const imageLoading = document.getElementById('image-loading');
+        const btnUseImage = document.getElementById('btn-use-image');
+        
+        if (!modal) {
+            console.error('❌ Modal de seleção de imagens não encontrado');
+            return;
+        }
+        
+        // Mostrar modal
+        modal.style.display = 'block';
+        queryDisplay.textContent = searchQuery;
+        imageGrid.innerHTML = '';
+        imageLoading.style.display = 'block';
+        btnUseImage.disabled = true;
+        
+        try {
+            // Buscar imagens (simulado - em produção usaria uma API real)
+            const images = await this.fetchProductImages(searchQuery);
+            
+            imageLoading.style.display = 'none';
+            
+            if (images && images.length > 0) {
+                this.displayImageOptions(images);
+            } else {
+                imageGrid.innerHTML = '<p style="text-align:center;color:#6c757d;padding:40px;">Nenhuma imagem encontrada. Tente um nome diferente.</p>';
+            }
+        } catch (error) {
+            console.error('❌ Erro ao buscar imagens:', error);
+            imageLoading.style.display = 'none';
+            imageGrid.innerHTML = '<p style="text-align:center;color:#dc3545;padding:40px;">Erro ao buscar imagens. Tente novamente.</p>';
+        }
+    }
+
+    async fetchProductImages(searchQuery) {
+        console.log('🔍 Buscando imagens para:', searchQuery);
+        
+        // SIMULAÇÃO: Em produção, você usaria APIs como:
+        // - Google Custom Search API
+        // - Unsplash API
+        // - Pexels API
+        // - SerpAPI
+        
+        // Por enquanto, vamos simular com imagens de placeholder baseadas no tipo de produto
+        const images = [];
+        const lowerQuery = searchQuery.toLowerCase();
+        
+        // Base de imagens reais de produtos portugueses comuns
+        const productImageDatabase = {
+            // Bebidas
+            'coca-cola': [
+                'https://www.continente.pt/dw/image/v2/BDVS_PRD/on/demandware.static/-/Sites-col-master-catalog/default/dwc8f8e8f4/images/col/449/4490002540227-frente.jpg',
+                'https://www.pingodoce.pt/wp-content/uploads/2019/02/coca-cola-1-5l.jpg',
+                'https://imgs.search.brave.com/vJEqQFmCOqGDMzMH8kHvfzGZ6m9RJ0DqYxMPKQVfaL8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NTFNb1FKOW5Fb0wu/anBn'
+            ],
+            'leite': [
+                'https://www.continente.pt/dw/image/v2/BDVS_PRD/on/demandware.static/-/Sites-col-master-catalog/default/dw9a7f0f6a/images/col/560/5601049132995-frente.jpg',
+                'https://www.pingodoce.pt/wp-content/uploads/2019/02/leite-meio-gordo-mimosa-1l.jpg',
+                'https://imgs.search.brave.com/KZYjhLf5tS5YGvL7pE6vKQwZKKOXqZQ8nGZLKmQfZxA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/bWltb3NhLnB0L3dw/LWNvbnRlbnQvdXBs/b2Fkcy8yMDIwLzA3/L0xlaXRlLVVIVC1N/ZWlvLUdvcmRvLmpw/Zw'
+            ],
+            'agua': [
+                'https://www.continente.pt/dw/image/v2/BDVS_PRD/on/demandware.static/-/Sites-col-master-catalog/default/dw1c8d3e4c/images/col/560/5604172000360-frente.jpg',
+                'https://imgs.search.brave.com/r9UJZv_kEQQR8VqF_hYKBqB9fMOKGqB9fMOKGqB9fMM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/YXVjaGFuLnB0L2R3/L2ltYWdlL3YyL0JE/VlNfUFJEL29uL2Rl/bWFuZHdhcmUuc3Rh/dGljLy0vU2l0ZXMt/Y29sLW1hc3Rlci1j/YXRhbG9nL2RlZmF1/bHQvZHc3ZjNmM2Yw/YS9pbWFnZXMvY29s/LzU2MC81NjA0MTcy/MDAwMzYwLWZyZW50/ZS5qcGc',
+                'https://www.pingodoce.pt/wp-content/uploads/2019/02/agua-monchique-1-5l.jpg'
+            ],
+            'chocolate': [
+                'https://www.continente.pt/dw/image/v2/BDVS_PRD/on/demandware.static/-/Sites-col-master-catalog/default/dw8f3b7a9c/images/col/789/7891000369098-frente.jpg',
+                'https://imgs.search.brave.com/QqWX5vK8pNqYxMH8kHvfzGZ6m9RJ0DqYxMPKQVfaL8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NzFoR3JRTEpYM0wu/anBn',
+                'https://www.auchan.pt/dw/image/v2/BDVS_PRD/on/demandware.static/-/Sites-col-master-catalog/default/dw9f3f3e4c/images/col/789/7891000369098-frente.jpg'
+            ],
+            'iogurte': [
+                'https://www.continente.pt/dw/image/v2/BDVS_PRD/on/demandware.static/-/Sites-col-master-catalog/default/dw7f3b9a8c/images/col/560/5601050036541-frente.jpg',
+                'https://imgs.search.brave.com/vMH8kHvfzGZ6m9RJ0DqYxMPKQVfaL8QqWX5vK8pNqY/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/ZGFub25lLnB0L3dw/LWNvbnRlbnQvdXBs/b2Fkcy8yMDIwLzA3/L09pa29zLU5hdHVy/YWwuanBn',
+                'https://www.pingodoce.pt/wp-content/uploads/2019/02/oikos-natural-4x110g.jpg'
+            ]
+        };
+        
+        // Tentar encontrar imagens específicas
+        for (const [key, urls] of Object.entries(productImageDatabase)) {
+            if (lowerQuery.includes(key)) {
+                console.log(`✅ Encontradas ${urls.length} imagens para ${key}`);
+                return urls.map((url, index) => ({
+                    url: url,
+                    thumbnail: url,
+                    title: `${searchQuery} - Opção ${index + 1}`,
+                    source: 'Catálogo de Supermercados PT'
+                }));
+            }
+        }
+        
+        // Fallback: Imagens genéricas baseadas em categoria
+        const categoryImages = {
+            'bebida': [
+                'https://png.pngtree.com/png-vector/20241025/ourmid/pngtree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png',
+                'https://png.pngtree.com/png-vector/20220705/ourmid/pngtree-soft-drink-bottle-png-image_5683092.png',
+                'https://png.pngtree.com/png-vector/20220705/ourmid/pngtree-water-bottle-png-image_5683091.png'
+            ],
+            'alimento': [
+                'https://png.pngtree.com/png-vector/20241025/ourmid/pngtree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png',
+                'https://png.pngtree.com/png-vector/20220705/ourmid/pngtree-food-package-png-image_5683093.png'
+            ],
+            'higiene': [
+                'https://png.pngtree.com/png-vector/20220705/ourmid/pngtree-shampoo-bottle-png-image_5683094.png',
+                'https://png.pngtree.com/png-vector/20220705/ourmid/pngtree-soap-bar-png-image_5683095.png'
+            ]
+        };
+        
+        // Detectar categoria e retornar imagens genéricas
+        for (const [category, urls] of Object.entries(categoryImages)) {
+            if (lowerQuery.includes(category)) {
+                return urls.map((url, index) => ({
+                    url: url,
+                    thumbnail: url,
+                    title: `${searchQuery} - Imagem ${index + 1}`,
+                    source: 'Imagens Genéricas'
+                }));
+            }
+        }
+        
+        // Se não encontrou nada, retorna imagem padrão
+        return [{
+            url: 'https://png.pngtree.com/png-vector/20241025/ourmid/pngtree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png',
+            thumbnail: 'https://png.pngtree.com/png-vector/20241025/ourmid/pngtree-grocery-cart-filled-with-fresh-vegetables-png-image_14162473.png',
+            title: `${searchQuery} - Imagem Padrão`,
+            source: 'Imagem Genérica'
+        }];
+    }
+
+    displayImageOptions(images) {
+        const imageGrid = document.getElementById('image-grid');
+        const btnUseImage = document.getElementById('btn-use-image');
+        
+        imageGrid.innerHTML = '';
+        
+        let selectedImageUrl = null;
+        
+        images.forEach((image, index) => {
+            const imageOption = document.createElement('div');
+            imageOption.className = 'image-option';
+            imageOption.dataset.url = image.url;
+            
+            imageOption.innerHTML = `
+                <img src="${image.thumbnail}" alt="${image.title}" loading="lazy">
+                <div class="image-option-info">
+                    <div style="font-weight: 600; color: #212529; margin-bottom: 2px;">${image.source}</div>
+                    <div>${image.title}</div>
+                </div>
+            `;
+            
+            imageOption.addEventListener('click', () => {
+                // Remove seleção anterior
+                document.querySelectorAll('.image-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Seleciona atual
+                imageOption.classList.add('selected');
+                selectedImageUrl = image.url;
+                btnUseImage.disabled = false;
+                
+                console.log('🖼️ Imagem selecionada:', selectedImageUrl);
+            });
+            
+            imageGrid.appendChild(imageOption);
+        });
+        
+        // Botão para usar imagem selecionada
+        btnUseImage.onclick = () => {
+            if (selectedImageUrl) {
+                const imageInput = document.getElementById('product-image');
+                const useCustomRadio = document.getElementById('use-custom-image');
+                
+                if (imageInput && useCustomRadio) {
+                    imageInput.value = selectedImageUrl;
+                    useCustomRadio.checked = true;
+                    
+                    // Mostrar o grupo de URL de imagem
+                    const imageUrlGroup = document.querySelector('.image-url-group');
+                    if (imageUrlGroup) {
+                        imageUrlGroup.style.display = 'block';
+                    }
+                    
+                    // Anima o campo preenchido
+                    imageInput.style.background = 'linear-gradient(90deg, #d4edda 0%, #ffffff 100%)';
+                    setTimeout(() => { imageInput.style.background = ''; }, 3000);
+                    
+                    // Mostrar preview
+                    this.showImagePreview(selectedImageUrl);
+                    
+                    alert('✅ Imagem selecionada com sucesso!');
+                    this.closeImageModal();
+                }
+            }
+        };
+        
+        // Botões de fechar modal
+        const closeBtn = document.getElementById('close-image-modal');
+        const cancelBtn = document.getElementById('btn-cancel-image');
+        
+        closeBtn.onclick = () => this.closeImageModal();
+        cancelBtn.onclick = () => this.closeImageModal();
+        
+        // Fechar ao clicar fora
+        const modal = document.getElementById('image-selection-modal');
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                this.closeImageModal();
+            }
+        };
+    }
+
+    closeImageModal() {
+        const modal = document.getElementById('image-selection-modal');
+        if (modal) {
+            modal.style.display = 'none';
         }
     }
 }

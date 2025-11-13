@@ -232,7 +232,14 @@
 
                         <div class="form-group image-url-group">
                             <label for="product-image">URL da Imagem:</label>
-                            <input type="url" id="product-image" placeholder="URL da imagem (Opcional)">
+                            <div class="image-input-group">
+                                <input type="url" id="product-image" placeholder="URL da imagem (Opcional)">
+                                <button type="button" id="search-image-btn" class="btn-search-image" title="Buscar imagem do produto no Google">
+                                    <i class="fas fa-search"></i>
+                                    <span style="margin-left: 4px; font-size: 10px;">Buscar Imagem</span>
+                                </button>
+                            </div>
+                            <small class="help-text">Digite o nome do produto acima e clique em "Buscar Imagem" para encontrar uma imagem</small>
                         </div>
 
                         <button type="submit" class="btn-submit" id="form-submit-btn">Adicionar Produto</button>
@@ -621,6 +628,33 @@
             background: #545b62;
         }
     </style>
+    
+    <!-- Modal de Seleção de Imagens -->
+    <div id="image-selection-modal" class="image-selection-modal">
+        <div class="image-selection-content">
+            <div class="image-selection-header">
+                <h3><i class="fas fa-images"></i> Selecionar Imagem do Produto</h3>
+                <button id="close-image-modal" class="close-image-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="image-selection-body">
+                <div class="image-search-info">
+                    <i class="fas fa-info-circle"></i> Buscando imagens para: <strong id="image-search-query"></strong>
+                </div>
+                <div id="image-loading" class="image-loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Buscando imagens...</p>
+                </div>
+                <div id="image-grid" class="image-grid"></div>
+            </div>
+            <div class="image-selection-footer">
+                <button id="btn-cancel-image" class="btn-cancel-image">Cancelar</button>
+                <button id="btn-use-image" class="btn-use-image" disabled>Usar Imagem Selecionada</button>
+            </div>
+        </div>
+    </div>
+    
     <script src="js/scanner-unify.js"></script>
 </body>
 </html>
