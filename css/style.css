@@ -2614,27 +2614,27 @@ button[aria-label="Abrir leitor de código de barras"],
         justify-content: center;
     }
     .barcode-scanner-content {
-        max-width: 500px;
-        max-height: 700px;
+        max-width: 600px;
+        max-height: 85vh;
         border-radius: 16px;
         margin: auto;
     }
     #scanner-container {
-        max-width: 360px;
-        max-height: 520px;
+        max-width: 400px;
+        max-height: 300px;
         border-radius: 12px;
         margin: auto;
     }
     #scanner-target {
-        max-width: 360px;
-        max-height: 520px;
+        max-width: 400px;
+        max-height: 300px;
         border-radius: 12px;
         margin: auto;
     }
     #scanner-target canvas,
     #scanner-target video {
-        width: 360px !important;
-        height: 520px !important;
+        max-width: 400px !important;
+        max-height: 300px !important;
         object-fit: cover;
     }
 }
