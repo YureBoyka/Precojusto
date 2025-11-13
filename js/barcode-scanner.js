@@ -350,7 +350,6 @@
         scannerModal.classList.add('show');
         scannerModal.style.display = 'flex';
         document.body.classList.add('modal-open');
-        document.body.classList.add('scanner-active');
         
         // Resetar flash
         flashEnabled = false;
@@ -381,7 +380,6 @@
         }
         
         document.body.classList.remove('modal-open');
-        document.body.classList.remove('scanner-active');
     }
 
     // Event listeners

@@ -2681,14 +2681,6 @@ button[aria-label="Abrir leitor de código de barras"],
     justify-content: center;
 }
 
-/* Quando o modal do scanner está ativo, bloqueia o scroll do body */
-body.scanner-active {
-    overflow: hidden !important;
-    position: fixed !important;
-    width: 100% !important;
-    height: 100% !important;
-}
-
 .barcode-scanner-content {
     position: relative;
     background-color: #1a1a1a;
