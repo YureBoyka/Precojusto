@@ -3716,29 +3716,29 @@ window.addEventListener('productsLoaded', (event) => {
         renderFavorites();
     });
 
-    // Fechar modais com animação
-    closeModalBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const modal = btn.closest('.modal');
-            closeModal(modal);
-        });
-    });
-
-    closeCartBtn.addEventListener('click', () => {
-        closeModal(cartModal);
-    });
-
-    // Fechar modais clicando fora (backdrop) - genérico para qualquer modal
-    window.addEventListener('click', (e) => {
-        try {
-            if (e.target && e.target.classList && e.target.classList.contains('modal')) {
-                closeModal(e.target);
-            }
-        } catch (err) {
-            // segurança contra ambientes inesperados
-            console.error('Erro ao avaliar clique no backdrop do modal:', err);
-        }
-    });
+    // COMENTADO: // Fechar modais com animação
+    // COMENTADO: closeModalBtns.forEach(btn => {
+    // COMENTADO: btn.addEventListener('click', () => {
+    // COMENTADO: const modal = btn.closest('.modal');
+    // COMENTADO: closeModal(modal);
+    // COMENTADO: });
+    // COMENTADO: });
+    // COMENTADO: 
+    // COMENTADO: closeCartBtn.addEventListener('click', () => {
+    // COMENTADO: closeModal(cartModal);
+    // COMENTADO: });
+    // COMENTADO: 
+    // COMENTADO: // Fechar modais clicando fora (backdrop) - genérico para qualquer modal
+    // COMENTADO: window.addEventListener('click', (e) => {
+    // COMENTADO: try {
+    // COMENTADO: if (e.target && e.target.classList && e.target.classList.contains('modal')) {
+    // COMENTADO: closeModal(e.target);
+    // COMENTADO: }
+    // COMENTADO: } catch (err) {
+    // COMENTADO: // segurança contra ambientes inesperados
+    // COMENTADO: console.error('Erro ao avaliar clique no backdrop do modal:', err);
+    // COMENTADO: }
+    // COMENTADO: });
 
     // Lógica para os botões de scroll da lista de produtos
     if (scrollContainer && prevBtn && nextBtn) {
