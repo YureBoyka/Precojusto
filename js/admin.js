@@ -314,20 +314,46 @@ class BarcodeProductSearch {
                         resultsDiv.innerHTML = '<div style="color:#2563eb; font-size:14px;">Carregando imagens...</div>';
                         
                         try {
-                            // Usa proxy CORS para contornar bloqueio
+                            // Tenta buscar imagens com fallback de múltiplos proxies
                             const tryFetchImages = async (engineName) => {
                                 const apiUrl = `https://serpapi.com/search.json?engine=${engineName}&hl=pt-BR&gl=pt&google_domain=google.pt&safe=active&q=${encodeURIComponent(query)}&ijn=0&api_key=${encodeURIComponent(apiKey)}`;
-                                // Proxy CORS público para desenvolvimento
-                                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
-                                console.log('Tentando via proxy:', proxyUrl);
                                 
-                                const resp = await fetch(proxyUrl, { 
-                                    method: 'GET',
-                                    cache: 'no-store'
-                                });
+                                // Lista de proxies CORS para tentar (em ordem de preferência)
+                                const proxies = [
+                                    null, // Tenta direto primeiro (funciona no GitHub Pages)
+                                    `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`,
+                                    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(apiUrl)}`,
+                                    `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`
+                                ];
                                 
-                                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                                return await resp.json();
+                                for (const proxy of proxies) {
+                                    try {
+                                        const url = proxy || apiUrl;
+                                        console.log(`Tentando ${proxy ? 'via proxy' : 'direto'}:`, url);
+                                        
+                                        const resp = await fetch(url, { 
+                                            method: 'GET',
+                                            cache: 'no-store',
+                                            headers: proxy ? {} : {
+                                                'Accept': 'application/json'
+                                            }
+                                        });
+                                        
+                                        if (!resp.ok) {
+                                            console.warn(`Falhou (${resp.status}):`, url);
+                                            continue;
+                                        }
+                                        
+                                        const data = await resp.json();
+                                        console.log('✅ Sucesso:', proxy ? 'via proxy' : 'direto');
+                                        return data;
+                                    } catch (err) {
+                                        console.warn(`Erro com ${proxy ? 'proxy' : 'direto'}:`, err.message);
+                                        continue;
+                                    }
+                                }
+                                
+                                throw new Error('Todos os métodos falharam');
                             };
                             
                             let data = null;
