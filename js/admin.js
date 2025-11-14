@@ -3521,6 +3521,17 @@ document.addEventListener('DOMContentLoaded', () => {
             button.classList.add('active');
             document.getElementById(button.dataset.tab).style.display = 'block';
 
+            // Limpar campo de imagem ao trocar para aba de adicionar produto
+            if (button.dataset.tab === 'tab-add-product') {
+                const imageInput = document.getElementById('product-image');
+                if (imageInput && !document.getElementById('product-id').value) {
+                    // Só limpa se não estiver editando um produto
+                    imageInput.value = '';
+                    imageInput.style.background = '';
+                    imageInput.title = '';
+                }
+            }
+
             // Re-renderizar o conteúdo quando a aba for ativada
             if (button.dataset.tab === 'tab-view-products') {
                 // Carregar produtos do Firebase sempre que a aba for aberta
@@ -3572,9 +3583,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (product) {
                 console.log('📝 EDITANDO produto:', product);
                 console.log('📝 ID do produto:', product.id);
+                console.log('📝 Imagem do produto:', product.imageUrl);
                 
-                // Limpar formulário antes de preencher com novo produto
+                // PRIMEIRO: Limpar TODOS os campos de imagem
                 const imageInput = document.getElementById('product-image');
+                const productImageUrlInput = document.getElementById('product-image');
                 if (imageInput) {
                     imageInput.value = '';
                     imageInput.style.background = '';
@@ -3615,14 +3628,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('market-zone').value = product.zone;
                 marketParishInput.value = product.parish;
 
-                // Trata a URL da imagem
-                if (product.imageUrl === DEFAULT_IMAGE_URL) {
+                // ÚLTIMO: Trata a URL da imagem DEPOIS de limpar
+                if (product.imageUrl === DEFAULT_IMAGE_URL || !product.imageUrl) {
                     useDefaultImageRadio.checked = true;
                     imageUrlGroup.style.display = 'none';
+                    if (imageInput) {
+                        imageInput.value = '';
+                    }
                 } else {
                     useCustomImageRadio.checked = true;
-                    productImageUrlInput.value = product.imageUrl || '';
                     imageUrlGroup.style.display = 'block';
+                    // Preenche com a imagem DO PRODUTO ATUAL
+                    if (imageInput) {
+                        imageInput.value = product.imageUrl;
+                        console.log('📝 Campo de imagem preenchido com:', product.imageUrl);
+                    }
                 }
 
                 // Trocar para a aba de adicionar produto e focar no campo
