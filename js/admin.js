@@ -190,6 +190,10 @@ class BarcodeProductSearch {
                     }
                     modal.style.display = 'flex';
                     modal.dataset.query = query;
+                    
+                    // Bloqueia scroll da página de fundo
+                    document.body.style.overflow = 'hidden';
+                    
                     // Preenche campo de termo da busca no modal
                     const searchTermInputEl = document.getElementById('serpapi-search-term');
                     if (searchTermInputEl) {
@@ -241,6 +245,8 @@ class BarcodeProductSearch {
                         modal.style.display = 'none';
                         urlInput.value = '';
                         if (resultsDiv) resultsDiv.innerHTML = '';
+                        // Libera scroll da página
+                        document.body.style.overflow = '';
                     };
                 }
                 if (saveKeyBtn) {
@@ -458,6 +464,8 @@ class BarcodeProductSearch {
                                             modal.style.display = 'none';
                                             urlInput.value = '';
                                             if (resultsDiv) resultsDiv.innerHTML = '';
+                                            // Libera scroll da página
+                                            document.body.style.overflow = '';
                                         }, 300); // Pequeno delay para feedback visual
                                     };
                                     resultsDiv.appendChild(imgEl);
@@ -508,6 +516,8 @@ class BarcodeProductSearch {
                         modal.style.display = 'none';
                         urlInput.value = '';
                         if (resultsDiv) resultsDiv.innerHTML = '';
+                        // Libera scroll da página
+                        document.body.style.overflow = '';
                     };
                 }
             }
