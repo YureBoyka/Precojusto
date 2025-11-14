@@ -191,8 +191,8 @@ class BarcodeProductSearch {
                     modal.style.display = 'flex';
                     modal.dataset.query = query;
                     
-                    // Bloqueia scroll da página de fundo
-                    document.body.style.overflow = 'hidden';
+                    // Bloqueia scroll da página de fundo APENAS para este modal
+                    document.body.classList.add('google-image-modal-open');
                     
                     // Preenche campo de termo da busca no modal
                     const searchTermInputEl = document.getElementById('serpapi-search-term');
@@ -246,7 +246,21 @@ class BarcodeProductSearch {
                         urlInput.value = '';
                         if (resultsDiv) resultsDiv.innerHTML = '';
                         // Libera scroll da página
-                        document.body.style.overflow = '';
+                        document.body.classList.remove('google-image-modal-open');
+                    };
+                }
+                
+                // Fecha modal ao clicar fora (no backdrop)
+                if (modal) {
+                    modal.onclick = (e) => {
+                        // Só fecha se clicar diretamente no backdrop (não nos elementos filhos)
+                        if (e.target === modal) {
+                            modal.style.display = 'none';
+                            urlInput.value = '';
+                            if (resultsDiv) resultsDiv.innerHTML = '';
+                            // Libera scroll da página
+                            document.body.classList.remove('google-image-modal-open');
+                        }
                     };
                 }
                 if (saveKeyBtn) {
@@ -465,7 +479,7 @@ class BarcodeProductSearch {
                                             urlInput.value = '';
                                             if (resultsDiv) resultsDiv.innerHTML = '';
                                             // Libera scroll da página
-                                            document.body.style.overflow = '';
+                                            document.body.classList.remove('google-image-modal-open');
                                         }, 300); // Pequeno delay para feedback visual
                                     };
                                     resultsDiv.appendChild(imgEl);
@@ -517,7 +531,7 @@ class BarcodeProductSearch {
                         urlInput.value = '';
                         if (resultsDiv) resultsDiv.innerHTML = '';
                         // Libera scroll da página
-                        document.body.style.overflow = '';
+                        document.body.classList.remove('google-image-modal-open');
                     };
                 }
             }
