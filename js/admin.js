@@ -2938,7 +2938,42 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('📚 Histórico de navegação:', navigationHistory);
     };
 
+    // Função para limpar o formulário e voltar ao estado inicial
+    const resetFormToAddMode = () => {
+        productForm.reset();
+        document.getElementById('product-id').value = '';
+        document.getElementById('form-submit-btn').textContent = 'Adicionar Produto';
+        brandInputGroup.style.display = 'none';
+        otherMarketGroup.style.display = 'none';
+        imageUrlGroup.style.display = 'none';
+        document.getElementById('product-quantity').value = 1;
+        
+        // Limpar campo de imagem e seus estilos
+        const imageInput = document.getElementById('product-image');
+        if (imageInput) {
+            imageInput.value = '';
+            imageInput.style.background = '';
+            imageInput.title = '';
+        }
+        
+        // Remover qualquer preview de imagem existente
+        const existingPreview = document.querySelector('.image-preview');
+        if (existingPreview) existingPreview.remove();
+        
+        console.log('🧹 Formulário limpo - modo Adicionar Produto');
+    };
+
     const goBack = () => {
+        // Verificar se está editando um produto
+        const isEditingProduct = document.getElementById('product-id').value !== '';
+        
+        if (isEditingProduct) {
+            // Se estiver editando, limpa o formulário e fica na aba de adicionar
+            resetFormToAddMode();
+            console.log('⬅️ Cancelando edição - voltando para modo Adicionar');
+            return;
+        }
+        
         // Remove a aba atual do histórico
         if (navigationHistory.length > 0) {
             navigationHistory.pop();
