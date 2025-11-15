@@ -151,126 +151,151 @@ class BarcodeProductSearch {
         const searchNameButton = document.getElementById('search-name-btn');
         if (searchNameButton) {
             console.log('✅ Botão de busca de nomes encontrado');
-            searchNameButton.addEventListener('click', () => {
-                console.log('🔍 Clique no botão de busca de nomes detectado');
-                const productName = document.getElementById('product-name').value;
-                const brand = document.getElementById('product-brand').value || 'Marca';
-                const barcode = document.getElementById('product-barcode').value;
-                
-                console.log('📝 Dados para busca:', { productName, brand, barcode });
-                
-                if (productName && productName.trim()) {
-                    console.log('📝 Chamando searchMultipleNameReferences...');
-                    this.searchMultipleNameReferences(productName, brand, barcode);
-                } else {
-                    console.warn('⚠️ Campo nome vazio');
-                    alert('Por favor, preencha o campo nome primeiro');
+            const renderShoppingResults = (results, searchTerm) => {
+                if (!Array.isArray(results) || results.length === 0) {
+                    productSearchResults.innerHTML = `<div style=\"text-align:center; padding:24px; color:#6b7280;\">\
+                        <i class=\"fas fa-search\" style=\"font-size:42px; opacity:0.35;\"></i>\
+                        <p style=\"margin-top:10px;\">Nenhum produto encontrado</p>\
+                        <a href=\"https://www.google.pt/search?tbm=shop&q=${encodeURIComponent(searchTerm)}\" target=\"_blank\" style=\"color:#2563eb; text-decoration:underline;\">Abrir no Google Shopping</a>\
+                    </div>`;
+                    return;
                 }
-            });
-        } else {
-            console.error('❌ Botão de busca de nomes não encontrado!');
-        }
 
-            // Botão de busca de imagens no Google
-            const searchImageButton = document.getElementById('search-image-btn');
-            if (searchImageButton) {
-                searchImageButton.addEventListener('click', () => {
-                    const modal = document.getElementById('google-image-modal');
-                    const productName = document.getElementById('product-name').value.trim();
-                    const brand = document.getElementById('product-brand').value.trim();
-                    
-                    // Limpar resultados e URL anteriores ANTES de abrir
-                    const urlInputField = document.getElementById('google-image-url-input');
-                    const resultsContainer = document.getElementById('serpapi-image-results');
-                    if (urlInputField) urlInputField.value = '';
-                    if (resultsContainer) resultsContainer.innerHTML = '';
-                    
-                    let query = '';
-                    if (productName && brand) {
-                        query = `${brand} ${productName}`;
-                    } else if (productName) {
-                        query = productName;
-                    } else if (brand) {
-                        query = brand;
-                    } else {
-                        query = '';
-                    }
-                    modal.style.display = 'flex';
-                    modal.dataset.query = query;
-                    
-                    // Bloqueia scroll da página de fundo APENAS para este modal
-                    document.body.classList.add('admin-google-image-modal-open');
-                    
-                    // Preenche campo de termo da busca no modal
-                    const searchTermInputEl = document.getElementById('serpapi-search-term');
-                    if (searchTermInputEl) {
-                        searchTermInputEl.value = query || `${brand} ${productName}`.trim();
-                    }
-                    // Limpa resultados anteriores
-                    const resultsDiv = document.getElementById('serpapi-image-results');
-                    if (resultsDiv) resultsDiv.innerHTML = '';
-                    // Preenche chave salva (se existir)
-                    try {
-                        const savedKey = localStorage.getItem('serpapi_key');
-                        const serpapiKeyInput = document.getElementById('serpapi-key');
-                        if (savedKey && serpapiKeyInput && !serpapiKeyInput.value) {
-                            serpapiKeyInput.value = savedKey;
-                        }
-                        // Se houver query e chave, roda a busca automaticamente
-                        const keyToUse = serpapiKeyInput ? serpapiKeyInput.value.trim() : '';
-                        if (query && keyToUse) {
-                            setTimeout(() => {
-                                const btn = document.getElementById('open-google-images-btn');
-                                if (btn) btn.click();
-                            }, 50);
-                        }
-                    } catch (_) {}
-                });
+                productSearchResults.innerHTML = results.slice(0, 12).map(product => {
+                    const extractedPrice = (typeof product.extracted_price === 'number') ? product.extracted_price : null;
+                    const priceText = product.price || (extractedPrice ? `€ ${extractedPrice.toFixed(2)}` : 'Preço não disponível');
+                    const safePayload = {
+                        name: product.title,
+                        price: extractedPrice || 0,
+                        source: product.source || product.seller || ''
+                    };
+                    return `
+                    <div style=\"border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:12px; display:flex; gap:12px; align-items:start; cursor:pointer; transition:all 0.2s;\" class=\"product-result-item\" data-product='${JSON.stringify(safePayload)}'>
+                        ${product.thumbnail ? `<img src=\"${product.thumbnail}\" style=\"width:80px; height:80px; object-fit:contain; border-radius:6px; border:1px solid #e5e7eb;\">` : ''}
+                        <div style=\"flex:1;\">
+                            <h4 style=\"margin:0 0 6px 0; font-size:14px; color:#1f2937; font-weight:600;\">${product.title}</h4>
+                            <p style=\"margin:0 0 4px 0; font-size:13px; color:#16a34a; font-weight:bold;\">${priceText}</p>
+                            <p style=\"margin:0; font-size:12px; color:#6b7280;\"><i class=\"fas fa-store\"></i> ${product.source || product.seller || 'Loja não informada'}</p>
+                        </div>
+                        <button style=\"background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; white-space:nowrap;\">
+                            <i class=\"fas fa-check\"></i> Usar
+                        </button>
+                    </div>`;
+                }).join('');
 
-                // Botão de visualizar imagem atual em modal
-                const previewImageBtn = document.getElementById('preview-image-btn');
-                if (previewImageBtn) {
-                    previewImageBtn.addEventListener('click', () => {
-                        const imgInput = document.getElementById('product-image');
-                        let src = (imgInput && imgInput.value.trim()) || '';
+                document.querySelectorAll('.product-result-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const productData = JSON.parse(item.dataset.product);
 
-                        // Se vazio, tenta buscar do produto em edição
-                        if (!src) {
-                            const id = document.getElementById('product-id').value;
-                            if (id) {
-                                const prod = getFromLocalStorage('products').find(p => p.id == id);
-                                if (prod && prod.imageUrl && prod.imageUrl !== 'DEFAULT_IMAGE_URL') {
-                                    src = prod.imageUrl;
-                                }
+                        // Preencher formulário
+                        const nameField = document.getElementById('product-name');
+                        nameField.value = capitalizeFirst(productData.name || '');
+                        document.getElementById('product-price').value = productData.price || '';
+
+                        // Tentar identificar o mercado
+                        const source = (productData.source || '').toLowerCase();
+                        const marketMapping = {
+                            'continente': 'Continente',
+                            'continente online': 'Continente',
+                            'loja online continente': 'Continente',
+                            'pingo doce': 'Pingo Doce',
+                            'pingodoce': 'Pingo Doce',
+                            'lidl': 'Lidl',
+                            'aldi': 'Aldi',
+                            'auchan': 'Auchan',
+                            'minipreço': 'Minipreço',
+                            'minipreco': 'Minipreço',
+                            'mercadona': 'Mercadona',
+                            'recheio': 'Recheio',
+                            'makro': 'Makro'
+                        };
+
+                        let marketFound = false;
+                        for (const [key, value] of Object.entries(marketMapping)) {
+                            if (source.includes(key)) {
+                                document.getElementById('product-market').value = value;
+                                marketFound = true;
+                                break;
                             }
                         }
 
-                        const previewModal = document.getElementById('current-image-modal');
-                        const imgEl = document.getElementById('current-image-preview');
-                        const caption = document.getElementById('current-image-caption');
-                        if (!src) {
-                            caption.textContent = 'Sem imagem cadastrada para este produto.';
-                            imgEl.src = '';
-                        } else {
-                            caption.textContent = src;
-                            imgEl.src = src;
+                        if (!marketFound) {
+                            document.getElementById('product-market').value = 'Outro';
+                            document.getElementById('custom-market-name').value = productData.source || '';
+                            document.getElementById('custom-market-name').style.display = 'block';
                         }
-                        previewModal.style.display = 'flex';
-                        document.body.classList.add('admin-google-image-modal-open');
-                    });
-                }
 
-                // Fecha modal de visualização atual
-                const closeCurrentImageBtn = document.getElementById('close-current-image-modal');
-                const currentImageModal = document.getElementById('current-image-modal');
-                if (closeCurrentImageBtn && currentImageModal) {
-                    const closeFn = () => {
-                        currentImageModal.style.display = 'none';
+                        productSearchModal.style.display = 'none';
                         document.body.classList.remove('admin-google-image-modal-open');
-                    };
-                    closeCurrentImageBtn.addEventListener('click', closeFn);
-                    currentImageModal.addEventListener('click', (e) => { if (e.target === currentImageModal) closeFn(); });
-                }
+
+                        alert('✅ Dados do produto preenchidos! Confira e ajuste se necessário.');
+                    });
+                });
+            };
+
+            const fetchShopping = async (apiKey, searchTerm) => {
+                const url = `https://serpapi.com/search.json?engine=google_shopping&q=${encodeURIComponent(searchTerm)}&api_key=${apiKey}&gl=pt&hl=pt-PT&google_domain=google.pt&location=${encodeURIComponent('Portugal')}`;
+                const res = await fetch(url);
+                const json = await res.json();
+                return { res, json };
+            };
+
+            const fetchGoogleTbmShop = async (apiKey, searchTerm) => {
+                const url = `https://serpapi.com/search.json?engine=google&tbm=shop&q=${encodeURIComponent(searchTerm)}&api_key=${apiKey}&gl=pt&hl=pt-PT&google_domain=google.pt&location=${encodeURIComponent('Portugal')}`;
+                const res = await fetch(url);
+                const json = await res.json();
+                return { res, json };
+            };
+
+            if (searchProductsBtn) {
+                searchProductsBtn.addEventListener('click', async () => {
+                    const searchTerm = productSearchTerm.value.trim();
+                    if (!searchTerm) {
+                        alert('Digite um termo de busca');
+                        return;
+                    }
+
+                    productSearchResults.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:24px; color:#16a34a;"></i><p style="margin-top:10px;">Buscando produtos...</p></div>';
+
+                    const apiKey = getSerpApiKey();
+                    if (!apiKey) {
+                        productSearchResults.innerHTML = '<div style="text-align:center; padding:24px; color:#b45309; background:#fffbeb; border:1px solid #f59e0b; border-radius:8px;">\
+                            <p style="margin:0 0 6px 0; font-weight:600;">Chave SerpAPI não definida</p>\
+                            <p style="margin:0 0 10px 0; font-size:13px;">Defina a chave na seção "Selecionar Imagem do Google" clicando em Salvar.</p>\
+                            <a href="https://serpapi.com/manage-api-key" target="_blank" style="color:#2563eb; text-decoration:underline;">Obter chave SerpAPI</a>\
+                        </div>';
+                        return;
+                    }
+
+                    try {
+                        // 1) Tenta google_shopping
+                        let { res, json } = await fetchShopping(apiKey, searchTerm);
+
+                        // Se erro/limite, tenta fallback
+                        if (!res.ok || json.error || !Array.isArray(json.shopping_results) || json.shopping_results.length === 0) {
+                            console.warn('google_shopping vazio/erro, tentando fallback tbm=shop', json && json.error);
+                            let fallback = await fetchGoogleTbmShop(apiKey, searchTerm);
+                            res = fallback.res; json = fallback.json;
+                        }
+
+                        if (!res.ok || json.error) {
+                            const msg = json.error || `Erro HTTP ${res.status}`;
+                            productSearchResults.innerHTML = `<div style=\"text-align:center; padding:24px; color:#dc2626;\">\
+                                <p style=\"margin:0 0 6px 0; font-weight:600;\">Erro ao buscar produtos</p>\
+                                <p style=\"margin:0 0 10px 0; font-size:13px;\">${msg}</p>\
+                                <a href=\"https://www.google.pt/search?tbm=shop&q=${encodeURIComponent(searchTerm)}\" target=\"_blank\" style=\"color:#2563eb; text-decoration:underline;\">Abrir no Google Shopping</a>\
+                            </div>`;
+                            return;
+                        }
+
+                        const results = Array.isArray(json.shopping_results) ? json.shopping_results : [];
+                        renderShoppingResults(results, searchTerm);
+                    } catch (error) {
+                        console.error('Erro ao buscar produtos:', error);
+                        productSearchResults.innerHTML = '<div style="text-align:center; padding:40px; color:#dc2626;"><i class="fas fa-exclamation-triangle" style="font-size:48px;"></i><p style="margin-top:12px;">Erro ao buscar produtos. Tente novamente.</p></div>';
+                    }
+                });
+            }
 
                 // Modal logic
                 const modal = document.getElementById('google-image-modal');
